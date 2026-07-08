@@ -358,6 +358,13 @@
     0 0 120px rgba(139, 92, 246, 0.15);
 }
 
+/* Reduce to single shadow on mobile — triple layers are GPU-heavy */
+@media (pointer: coarse) {
+  .hero-name-glow {
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  }
+}
+
 /* Cursor glow */
 .cursor-glow {
   pointer-events: none;

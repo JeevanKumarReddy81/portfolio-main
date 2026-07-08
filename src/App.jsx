@@ -27,13 +27,22 @@ const ScrollProgressBar = () => {
 const CursorGlow = () => {
     const [pos, setPos] = useState({ x: -500, y: -500 });
     const [visible, setVisible] = useState(false);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
     useEffect(() => {
+        const isTouch = window.matchMedia('(pointer: coarse)').matches;
+        setIsTouchDevice(isTouch);
+        if (isTouch) return;
+
         const move = (e) => { setPos({ x: e.clientX, y: e.clientY }); setVisible(true); };
         const leave = () => setVisible(false);
         window.addEventListener('mousemove', move);
         window.addEventListener('mouseleave', leave);
         return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseleave', leave); };
     }, []);
+
+    if (isTouchDevice) return null;
+
     return (
         <div
             className="cursor-glow"
@@ -258,6 +267,11 @@ const Counter = ({ value, duration = 1.5 }) => {
 const MagneticButton = ({ children, className, ...props }) => {
     const ref = useRef(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [isTouchDevice] = useState(() => window.matchMedia('(pointer: coarse)').matches);
+
+    if (isTouchDevice) {
+        return <div className={className} {...props}>{children}</div>;
+    }
 
     const handleMouseMove = (e) => {
         const { clientX, clientY } = e;
@@ -499,18 +513,27 @@ const EducationGraphCanvas = () => {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         
+        // EducationGraphCanvas — mouse + touch interaction
         const handleMouseMove = (e) => {
             const rect = canvas.getBoundingClientRect();
             mouseRef.current.x = e.clientX - rect.left;
             mouseRef.current.y = e.clientY - rect.top;
             mouseRef.current.active = true;
         };
-        const handleMouseLeave = () => {
-            mouseRef.current.active = false;
+        const handleMouseLeave = () => { mouseRef.current.active = false; };
+        const handleTouchMove = (e) => {
+            if (!e.touches.length) return;
+            const rect = canvas.getBoundingClientRect();
+            mouseRef.current.x = e.touches[0].clientX - rect.left;
+            mouseRef.current.y = e.touches[0].clientY - rect.top;
+            mouseRef.current.active = true;
         };
-        
+        const handleTouchEnd = () => { mouseRef.current.active = false; };
+
         canvas.parentElement.addEventListener('mousemove', handleMouseMove);
         canvas.parentElement.addEventListener('mouseleave', handleMouseLeave);
+        canvas.parentElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+        canvas.parentElement.addEventListener('touchend', handleTouchEnd);
         
         let beamProgress1 = 0;
         let beamProgress2 = 0;
@@ -637,6 +660,8 @@ const EducationGraphCanvas = () => {
             window.removeEventListener('resize', resizeCanvas);
             canvas.parentElement.removeEventListener('mousemove', handleMouseMove);
             canvas.parentElement.removeEventListener('mouseleave', handleMouseLeave);
+            canvas.parentElement.removeEventListener('touchmove', handleTouchMove);
+            canvas.parentElement.removeEventListener('touchend', handleTouchEnd);
             cancelAnimationFrame(animationFrameId);
             observer.disconnect();
         };
@@ -827,62 +852,51 @@ const CyberDataWave = () => {
 
 const CertificateCard = ({ cert, index }) => {
     const [isHovered, setIsHovered] = useState(false);
-    
+    const [isTouchDevice] = useState(() => window.matchMedia('(pointer: coarse)').matches);
+
     const floatDuration = 4.5 + (index % 3);
     const floatDelay = index * 0.25;
-    
+
+    const CardWrapper = isTouchDevice
+        ? ({ children }) => <div className="flex relative w-full">{children}</div>
+        : ({ children }) => (
+            <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: floatDuration, repeat: Infinity, ease: "easeInOut", delay: floatDelay }}
+                className="flex relative w-full"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
+                {children}
+            </motion.div>
+        );
+
+    const TiltWrapper = isTouchDevice
+        ? ({ children }) => <div className="w-full flex">{children}</div>
+        : ({ children }) => (
+            <Tilt
+                tiltMaxAngleX={6} tiltMaxAngleY={6}
+                glareEnable={true} glareMaxOpacity={0.12}
+                glareColor="#06b6d4" glarePosition="all"
+                glareBorderRadius="3rem" className="w-full flex"
+            >
+                {children}
+            </Tilt>
+        );
+
     return (
-        <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{
-                duration: floatDuration,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: floatDelay
-            }}
-            className="flex relative w-full"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {isHovered && (
+        <CardWrapper>
+            {!isTouchDevice && isHovered && (
                 <>
-                    {/* Cyber crosshair marker top-left */}
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="absolute -top-1.5 -left-1.5 text-cyan-400 z-30 font-mono text-[10px] font-black pointer-events-none select-none"
-                    >
-                        +
-                    </motion.div>
-                    {/* Cyber bracket marker bottom-right */}
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="absolute -bottom-2 -right-2 text-blue-400 z-30 font-mono text-[9px] font-black pointer-events-none select-none"
-                    >
-                        &lt;/&gt;
-                    </motion.div>
-                    {/* Cyber cursor marker middle-right */}
-                    <motion.div 
-                        animate={{ opacity: [1, 0, 1] }}
-                        transition={{ duration: 0.8, repeat: Infinity }}
-                        className="absolute top-1/2 -right-3 text-cyan-400 z-30 font-mono text-[11px] font-black pointer-events-none select-none"
-                    >
-                        _
-                    </motion.div>
+                    <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
+                        className="absolute -top-1.5 -left-1.5 text-cyan-400 z-30 font-mono text-[10px] font-black pointer-events-none select-none">+</motion.div>
+                    <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}
+                        className="absolute -bottom-2 -right-2 text-blue-400 z-30 font-mono text-[9px] font-black pointer-events-none select-none">&lt;/&gt;</motion.div>
+                    <motion.div animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }}
+                        className="absolute top-1/2 -right-3 text-cyan-400 z-30 font-mono text-[11px] font-black pointer-events-none select-none">_</motion.div>
                 </>
             )}
-
-            <Tilt 
-                tiltMaxAngleX={6} 
-                tiltMaxAngleY={6} 
-                glareEnable={true} 
-                glareMaxOpacity={0.12} 
-                glareColor="#06b6d4" 
-                glarePosition="all"
-                glareBorderRadius="3rem"
-                className="w-full flex"
-            >
+            <TiltWrapper>
                 <div 
                     onMouseMove={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -913,8 +927,8 @@ const CertificateCard = ({ cert, index }) => {
                         </div>
                     )}
                 </div>
-            </Tilt>
-        </motion.div>
+            </TiltWrapper>
+        </CardWrapper>
     );
 };
 
@@ -1075,18 +1089,27 @@ const ContactNetworkCanvas = () => {
             nodes.push(new NetworkNode());
         }
         
+        // ContactNetworkCanvas — mouse + touch interaction
         const handleMouseMove = (e) => {
             const rect = canvas.getBoundingClientRect();
             mouseRef.current.x = e.clientX - rect.left;
             mouseRef.current.y = e.clientY - rect.top;
             mouseRef.current.active = true;
         };
-        const handleMouseLeave = () => {
-            mouseRef.current.active = false;
+        const handleMouseLeave = () => { mouseRef.current.active = false; };
+        const handleTouchMove = (e) => {
+            if (!e.touches.length) return;
+            const rect = canvas.getBoundingClientRect();
+            mouseRef.current.x = e.touches[0].clientX - rect.left;
+            mouseRef.current.y = e.touches[0].clientY - rect.top;
+            mouseRef.current.active = true;
         };
-        
+        const handleTouchEnd = () => { mouseRef.current.active = false; };
+
         canvas.parentElement.addEventListener('mousemove', handleMouseMove);
         canvas.parentElement.addEventListener('mouseleave', handleMouseLeave);
+        canvas.parentElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+        canvas.parentElement.addEventListener('touchend', handleTouchEnd);
         
         const render = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1167,6 +1190,8 @@ const ContactNetworkCanvas = () => {
             window.removeEventListener('resize', resizeCanvas);
             canvas.parentElement.removeEventListener('mousemove', handleMouseMove);
             canvas.parentElement.removeEventListener('mouseleave', handleMouseLeave);
+            canvas.parentElement.removeEventListener('touchmove', handleTouchMove);
+            canvas.parentElement.removeEventListener('touchend', handleTouchEnd);
             cancelAnimationFrame(animationFrameId);
             observer.disconnect();
         };
@@ -1262,28 +1287,35 @@ const App = () => {
             {/* --- HERO --- */}
             <section id="home" className="min-h-screen flex items-center justify-center relative pt-20">
                 <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-                    <Canvas 
-                        camera={{ position: [0, 0, 5], fov: 60 }} 
-                        style={{ background: 'transparent' }}
-                    >
-                        <ambientLight intensity={1} />
-                        <pointLight position={[10, 10, 10]} intensity={1} />
-                        <RotatingReactLogo />
-                    </Canvas>
+                    {/* WebGL canvas only on desktop — too heavy for mobile */}
+                    {!window.matchMedia('(pointer: coarse)').matches ? (
+                        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} style={{ background: 'transparent' }}>
+                            <ambientLight intensity={1} />
+                            <pointLight position={[10, 10, 10]} intensity={1} />
+                            <RotatingReactLogo />
+                        </Canvas>
+                    ) : (
+                        /* CSS-only React atom fallback for mobile */
+                        <div className="w-full h-full flex items-center justify-center">
+                            <div className="relative w-64 h-64 flex items-center justify-center">
+                                <div className="absolute w-8 h-8 rounded-full bg-[#61dafb] shadow-[0_0_20px_#61dafb]" />
+                                <div className="absolute w-56 h-24 border border-[#61dafb]/50 rounded-[50%] animate-spin-slow" />
+                                <div className="absolute w-56 h-24 border border-[#61dafb]/50 rounded-[50%] animate-spin-slow" style={{ transform: 'rotate(60deg)', animationDuration: '8s' }} />
+                                <div className="absolute w-56 h-24 border border-[#61dafb]/50 rounded-[50%] animate-spin-slow" style={{ transform: 'rotate(-60deg)', animationDuration: '10s' }} />
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <motion.div 
-                    animate={{ 
-                        scale: [1, 1.2, 1], 
-                        x: [0, 50, -50, 0], 
-                        y: [0, -50, 50, 0] 
-                    }}
-                    transition={{ 
-                        duration: 15, 
-                        repeat: Infinity, 
-                        ease: "easeInOut" 
-                    }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[150px] rounded-full opacity-60 pointer-events-none" 
-                />
+                {/* Hero aurora blob — animated on desktop, static on mobile */}
+                {window.matchMedia('(pointer: coarse)').matches ? (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-600/5 blur-[100px] rounded-full opacity-40 pointer-events-none" />
+                ) : (
+                    <motion.div
+                        animate={{ scale: [1, 1.2, 1], x: [0, 50, -50, 0], y: [0, -50, 50, 0] }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 blur-[150px] rounded-full opacity-60 pointer-events-none"
+                    />
+                )}
                 {/* Floating tech badges */}
                 {[
                     { label: 'RAG',       x: '8%',  y: '22%', delay: 0,   color: 'text-cyan-400   border-cyan-500/30   bg-cyan-500/5'   },
@@ -1358,17 +1390,21 @@ const App = () => {
             {/* --- ABOUT --- */}
             {/* --- ABOUT --- */}
             <section id="about" className="py-20 relative overflow-hidden bg-zinc-950/5">
-                {/* Slow-moving cyber background blobs */}
-                <motion.div 
-                    animate={{ x: [0, 30, 0], y: [0, 15, 0] }} 
-                    transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-40 left-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" 
-                />
-                <motion.div 
-                    animate={{ x: [0, -25, 0], y: [0, -35, 0] }} 
-                    transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                    className="absolute -bottom-20 right-10 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" 
-                />
+                {/* Slow-moving cyber background blobs — desktop only */}
+                {!window.matchMedia('(pointer: coarse)').matches && (
+                    <>
+                        <motion.div
+                            animate={{ x: [0, 30, 0], y: [0, 15, 0] }}
+                            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                            className="absolute -top-40 left-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none"
+                        />
+                        <motion.div
+                            animate={{ x: [0, -25, 0], y: [0, -35, 0] }}
+                            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                            className="absolute -bottom-20 right-10 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none"
+                        />
+                    </>
+                )}
 
                 {/* Animated Grid Pattern Background */}
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-40" />
@@ -1401,23 +1437,33 @@ const App = () => {
                     transition={{ duration: 0.7, ease: 'easeOut' }}
                 >
                     <div className="flex flex-col lg:flex-row gap-24 items-center">
-                        {/* Slow parallax profile photo wrapper */}
-                        <motion.div
-                            animate={{ y: [0, -10, 0], rotate: [0, 1, -1, 0] }}
-                            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                            className="lg:w-[40%] relative group w-full max-w-[320px] lg:max-w-none"
-                        >
-                            {/* Neon Glow Aura */}
-                            <div className="absolute -inset-4 bg-cyan-500/10 rounded-[3rem] blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
-                            {/* Gradient border ring */}
-                            <div className="relative p-[3px] rounded-[3rem] bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 z-10">
-                            <div className="relative aspect-square rounded-[2.8rem] overflow-hidden bg-zinc-900 flex items-center justify-center">
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]" />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-500 font-black text-9xl select-none">JR</span>
-                                <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {/* Profile photo — float animation on desktop, static on mobile */}
+                        {window.matchMedia('(pointer: coarse)').matches ? (
+                            <div className="lg:w-[40%] relative group w-full max-w-[320px] lg:max-w-none">
+                                <div className="absolute -inset-4 bg-cyan-500/10 rounded-[3rem] blur-2xl opacity-60" />
+                                <div className="relative p-[3px] rounded-[3rem] bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 z-10">
+                                    <div className="relative aspect-square rounded-[2.8rem] overflow-hidden bg-zinc-900 flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]" />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-500 font-black text-9xl select-none">JR</span>
+                                    </div>
+                                </div>
                             </div>
-                            </div>
-                        </motion.div>
+                        ) : (
+                            <motion.div
+                                animate={{ y: [0, -10, 0], rotate: [0, 1, -1, 0] }}
+                                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                className="lg:w-[40%] relative group w-full max-w-[320px] lg:max-w-none"
+                            >
+                                <div className="absolute -inset-4 bg-cyan-500/10 rounded-[3rem] blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
+                                <div className="relative p-[3px] rounded-[3rem] bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 z-10">
+                                    <div className="relative aspect-square rounded-[2.8rem] overflow-hidden bg-zinc-900 flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_70%)]" />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-500 font-black text-9xl select-none">JR</span>
+                                        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
                         
                         <div className="lg:w-[60%] w-full">
                             <h2 className="text-2xl sm:text-3xl md:text-5xl font-black mb-8 tracking-normal">Aspiring <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI Engineer</span></h2>
@@ -1628,28 +1674,29 @@ const App = () => {
 
                 <SectionHeader title="My projects" subtitle="Some of the things I've built" />
                 <div className="max-w-6xl mx-auto px-10 grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                    {projects.map((proj, i) => (
-                        <motion.div
-                            key={i}
-                            animate={{ y: [0, -8, 0] }}
-                            transition={{
-                                duration: 5 + (i % 2) * 1.5,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                delay: i * 0.4
-                            }}
-                            className="flex relative w-full"
-                        >
-                            <Tilt 
-                                tiltMaxAngleX={6} 
-                                tiltMaxAngleY={6} 
-                                glareEnable={true} 
-                                glareMaxOpacity={0.1} 
-                                glareColor="#06b6d4" 
-                                glarePosition="all"
-                                glareBorderRadius="2.5rem"
-                                className="w-full flex"
-                            >
+                    {projects.map((proj, i) => {
+                        const isTouch = window.matchMedia('(pointer: coarse)').matches;
+                        const ProjectFloat = isTouch
+                            ? ({ children }) => <div className="flex relative w-full">{children}</div>
+                            : ({ children }) => (
+                                <motion.div
+                                    animate={{ y: [0, -8, 0] }}
+                                    transition={{ duration: 5 + (i % 2) * 1.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.4 }}
+                                    className="flex relative w-full"
+                                >{children}</motion.div>
+                            );
+                        const ProjectTilt = isTouch
+                            ? ({ children }) => <div className="w-full flex">{children}</div>
+                            : ({ children }) => (
+                                <Tilt tiltMaxAngleX={6} tiltMaxAngleY={6}
+                                    glareEnable={true} glareMaxOpacity={0.1}
+                                    glareColor="#06b6d4" glarePosition="all"
+                                    glareBorderRadius="2.5rem" className="w-full flex"
+                                >{children}</Tilt>
+                            );
+                        return (
+                        <ProjectFloat key={i}>
+                            <ProjectTilt>
                                 <div 
                                     onMouseMove={(e) => {
                                         const rect = e.currentTarget.getBoundingClientRect();
@@ -1692,9 +1739,10 @@ const App = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </Tilt>
-                        </motion.div>
-                    ))}
+                            </ProjectTilt>
+                        </ProjectFloat>
+                        );
+                    })}
                 </div>
             </section>
 
