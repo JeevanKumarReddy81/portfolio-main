@@ -1,0 +1,394 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@layer base {
+  :root {
+    --background: #020202;
+    --foreground: #ffffff;
+    --card-bg: rgba(9,9,11,0.8);
+    --card-border: #18181b;
+    --text-muted: #71717a;
+    --text-secondary: #a1a1aa;
+    --scrollbar-track: #020202;
+    --scrollbar-thumb: #18181b;
+    --scrollbar-thumb-hover: #27272a;
+  }
+
+  :root[data-theme="light"] {
+    --background: #f4f4f5;
+    --foreground: #09090b;
+    --card-bg: rgba(255,255,255,0.9);
+    --card-border: #e4e4e7;
+    --text-muted: #52525b;
+    --text-secondary: #3f3f46;
+    --scrollbar-track: #e4e4e7;
+    --scrollbar-thumb: #a1a1aa;
+    --scrollbar-thumb-hover: #71717a;
+  }
+
+  * {
+    @apply border-zinc-800;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cp01", "ss01";
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* ── Light mode overrides ─────────────────────────────────── */
+[data-theme="light"] body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+[data-theme="light"] .portfolio-root {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Main background */
+[data-theme="light"] .bg-\[\#020202\] {
+  background-color: #f1f5f9 !important;
+}
+
+/* Navbar */
+[data-theme="light"] nav {
+  background-color: rgba(255,255,255,0.9) !important;
+  border-color: rgba(99,102,241,0.15) !important;
+}
+
+/* Zinc dark backgrounds → clean white/light cards */
+[data-theme="light"] .bg-zinc-950\/20,
+[data-theme="light"] .bg-zinc-950\/10,
+[data-theme="light"] .bg-zinc-950\/40,
+[data-theme="light"] .bg-zinc-950\/50,
+[data-theme="light"] .bg-zinc-950\/80,
+[data-theme="light"] .bg-zinc-950\/90,
+[data-theme="light"] .bg-zinc-950 {
+  background-color: rgba(255,255,255,0.95) !important;
+}
+
+[data-theme="light"] .bg-zinc-900\/50,
+[data-theme="light"] .bg-zinc-900\/60,
+[data-theme="light"] .bg-zinc-900\/40,
+[data-theme="light"] .bg-zinc-900 {
+  background-color: rgba(226,232,240,0.7) !important;
+}
+
+[data-theme="light"] .bg-black\/40,
+[data-theme="light"] .bg-black\/60 {
+  background-color: rgba(248,250,252,0.95) !important;
+}
+
+/* Borders — visible on light backgrounds */
+[data-theme="light"] .border-zinc-900 {
+  border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .border-zinc-800 {
+  border-color: #e2e8f0 !important;
+}
+[data-theme="light"] .border-white\/5 {
+  border-color: rgba(99,102,241,0.12) !important;
+}
+[data-theme="light"] .border-white\/10 {
+  border-color: rgba(99,102,241,0.18) !important;
+}
+
+/* ── Text colors ── */
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+[data-theme="light"] .text-zinc-400 {
+  color: #334155 !important;
+}
+[data-theme="light"] .text-zinc-500 {
+  color: #475569 !important;
+}
+[data-theme="light"] .text-zinc-600 {
+  color: #64748b !important;
+}
+[data-theme="light"] .text-zinc-700 {
+  color: #94a3b8 !important;
+}
+[data-theme="light"] .text-zinc-300 {
+  color: #1e293b !important;
+}
+
+/* Section header text */
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4 {
+  color: #0f172a !important;
+}
+
+/* Accent colors — keep vivid on light */
+[data-theme="light"] .text-blue-500  { color: #2563eb !important; }
+[data-theme="light"] .text-blue-400  { color: #3b82f6 !important; }
+[data-theme="light"] .text-cyan-400  { color: #0891b2 !important; }
+[data-theme="light"] .text-cyan-500  { color: #0e7490 !important; }
+[data-theme="light"] .text-purple-400 { color: #7c3aed !important; }
+[data-theme="light"] .text-purple-500 { color: #6d28d9 !important; }
+[data-theme="light"] .text-emerald-400 { color: #059669 !important; }
+[data-theme="light"] .text-yellow-400  { color: #d97706 !important; }
+[data-theme="light"] .text-red-500    { color: #dc2626 !important; }
+[data-theme="light"] .text-orange-400 { color: #ea580c !important; }
+[data-theme="light"] .text-red-400    { color: #dc2626 !important; }
+[data-theme="light"] .text-cyan-300   { color: #0e7490 !important; }
+
+/* Section header underline stays vivid */
+[data-theme="light"] .bg-gradient-to-r.from-blue-500 {
+  opacity: 1 !important;
+}
+
+/* Skill pill tags */
+[data-theme="light"] span.bg-zinc-900 {
+  background-color: #e2e8f0 !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Nav links in light mode */
+[data-theme="light"] nav .hidden.md\:flex a {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: #475569 !important;
+}
+[data-theme="light"] nav .hidden.md\:flex a:hover {
+  background-color: rgba(37,99,235,0.08) !important;
+  border-color: rgba(37,99,235,0.2) !important;
+  color: #2563eb !important;
+}
+
+/* Mobile nav links */
+[data-theme="light"] nav a.text-zinc-400 {
+  color: #334155 !important;
+}
+
+/* Mobile nav overlay */
+[data-theme="light"] .bg-zinc-950\/95 {
+  background-color: rgba(248,250,252,0.98) !important;
+}
+
+/* Inputs and form */
+[data-theme="light"] input,
+[data-theme="light"] textarea {
+  background-color: rgba(241,245,249,0.8) !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Form labels */
+[data-theme="light"] label {
+  color: #475569 !important;
+}
+
+/* Contact section form container */
+[data-theme="light"] .border-cyan-500\/20 {
+  border-color: rgba(8,145,178,0.3) !important;
+}
+
+/* Card hover glow overrides */
+[data-theme="light"] .hover\:border-cyan-500\/20:hover {
+  border-color: rgba(8,145,178,0.35) !important;
+}
+[data-theme="light"] .hover\:border-blue-500\/20:hover {
+  border-color: rgba(37,99,235,0.35) !important;
+}
+[data-theme="light"] .hover\:border-purple-500\/20:hover {
+  border-color: rgba(109,40,217,0.3) !important;
+}
+
+/* Footer */
+[data-theme="light"] footer {
+  background-color: rgba(226,232,240,0.8) !important;
+  border-color: rgba(99,102,241,0.15) !important;
+}
+
+/* Footer text */
+[data-theme="light"] footer .text-zinc-600 {
+  color: #475569 !important;
+}
+[data-theme="light"] footer span.text-white {
+  color: #1e293b !important;
+}
+
+/* Footer tech badges */
+[data-theme="light"] footer span.bg-zinc-900 {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+[data-theme="light"] footer span.bg-zinc-900:hover {
+  border-color: rgba(37,99,235,0.4) !important;
+  color: #2563eb !important;
+}
+
+/* Floating tech badge backgrounds */
+[data-theme="light"] .bg-zinc-950\/60 {
+  background-color: rgba(255,255,255,0.9) !important;
+}
+
+/* Section divider — more visible on light */
+[data-theme="light"] .section-divider {
+  background: linear-gradient(to right, transparent, rgba(37,99,235,0.35), rgba(109,40,217,0.35), transparent) !important;
+}
+
+/* Scroll progress stays vivid */
+[data-theme="light"] .scroll-progress {
+  box-shadow: 0 0 10px rgba(99,102,241,0.4), 0 0 20px rgba(37,99,235,0.2);
+}
+
+/* Hero name glow — softer on light */
+[data-theme="light"] .hero-name-glow {
+  text-shadow:
+    0 0 30px rgba(99,102,241,0.3),
+    0 0 60px rgba(59,130,246,0.15);
+}
+
+/* Cursor glow — lighter on light bg */
+[data-theme="light"] .cursor-glow {
+  background: radial-gradient(circle, rgba(37,99,235,0.06) 0%, transparent 70%);
+}
+
+/* Timeline cards */
+[data-theme="light"] .bg-zinc-950\/40.border-zinc-900 {
+  background-color: rgba(255,255,255,0.9) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* Cert cards */
+[data-theme="light"] .bg-zinc-950\/40.rounded-\[3rem\] {
+  background-color: rgba(255,255,255,0.95) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07) !important;
+}
+
+/* About section grid bg */
+[data-theme="light"] .bg-\[linear-gradient\(rgba\(255\,255\,255\,0\.012\)_1px\,transparent_1px\)\,linear-gradient\(90deg\,rgba\(255\,255\,255\,0\.012\)_1px\,transparent_1px\)\] {
+  background-image:
+    linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px) !important;
+}
+
+/* Stat counter cards */
+[data-theme="light"] .bg-zinc-950\/30 {
+  background-color: rgba(255,255,255,0.85) !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Project tech tags */
+[data-theme="light"] span.text-zinc-500.bg-zinc-900 {
+  background-color: #e2e8f0 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+@layer components {
+  .bento-grid {
+    @apply grid gap-4 p-4;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+@keyframes scrollGrid {
+  0% {
+    background-position: 0px 0px;
+  }
+  100% {
+    background-position: 40px 40px;
+  }
+}
+
+.animated-blueprint-grid {
+  background-image: 
+    linear-gradient(to right, rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: scrollGrid 24s linear infinite;
+}
+
+[data-theme="light"] .animated-blueprint-grid {
+  background-image: 
+    linear-gradient(to right, rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+}
+
+/* Slow spin utility */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 6s linear infinite;
+}
+
+/* Hero name glow */
+.hero-name-glow {
+  text-shadow:
+    0 0 40px rgba(99, 102, 241, 0.55),
+    0 0 80px rgba(59, 130, 246, 0.3),
+    0 0 120px rgba(139, 92, 246, 0.15);
+}
+
+/* Cursor glow */
+.cursor-glow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+/* Section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(59, 130, 246, 0.25), rgba(139, 92, 246, 0.25), transparent);
+  width: 100%;
+  border: none;
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(to right, #6366f1, #3b82f6, #06b6d4);
+  transform-origin: left;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 0 20px rgba(59, 130, 246, 0.3);
+}
