@@ -1,2 +1,2 @@
-link : https://jeevan-reddy-portfolio-main-beta-fawn.vercel.app/
-link 2: https://portfolio-main-beta-fawn.vercel.app/
+link 1: https://jeevan-kumar-reddy-portfolio.vercel.app/
+link 2: https://jeevan-reddy-portfolio.vercel.app/
