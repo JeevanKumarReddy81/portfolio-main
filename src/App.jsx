@@ -1754,7 +1754,7 @@ const App = () => {
             {/* --- SKILLS --- */}
             <section id="myskills" className="py-12 bg-zinc-950/20">
                 <SectionHeader title="My skills" subtitle="Core competencies and frameworks" />
-                <div className="max-w-6xl mx-auto px-10 grid grid-cols-1 lg:grid-cols-3 gap-10 items-center">
+                <div className="hidden lg:grid max-w-6xl mx-auto px-10 grid-cols-1 lg:grid-cols-3 gap-10 items-center">
                     {/* Left Column (first 3 skill categories) */}
                     <div className="space-y-10">
                         {skills.slice(0, 3).map((s, i) => (
