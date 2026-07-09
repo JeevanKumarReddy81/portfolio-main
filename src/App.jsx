@@ -310,6 +310,54 @@ const MagneticButton = ({ children, className, ...props }) => {
     );
 };
 
+// --- MOBILE SKILL ACCORDION ---
+const MobileSkillAccordion = ({ skills }) => {
+    const [openIndex, setOpenIndex] = useState(null);
+    return (
+        <div className="lg:hidden mt-8 px-5 space-y-3">
+            {skills.map((s, i) => (
+                <div key={i} className="bg-zinc-950/80 border border-zinc-900 rounded-2xl overflow-hidden">
+                    <button
+                        onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                        className="w-full flex items-center justify-between px-5 py-4 text-left"
+                    >
+                        <span className="text-purple-400 text-xs font-black tracking-widest uppercase">{s.title}</span>
+                        <motion.span
+                            animate={{ rotate: openIndex === i ? 180 : 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="text-zinc-500 ml-2 shrink-0"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </motion.span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                        {openIndex === i && (
+                            <motion.div
+                                key="content"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.28, ease: 'easeInOut' }}
+                                className="overflow-hidden"
+                            >
+                                <div className="px-5 pb-5 flex flex-wrap gap-2 border-t border-zinc-900 pt-4">
+                                    {s.items.map(item => (
+                                        <span key={item} className="px-4 py-2 bg-zinc-900 border border-zinc-800 text-xs font-black text-zinc-300 rounded-xl uppercase tracking-tighter">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const OrbitingTech = () => {
     const icons = [
         { name: 'Java', color: 'text-red-500' },
@@ -943,6 +991,82 @@ const CertificateCard = ({ cert, index }) => {
 };
 
 
+
+// --- MOBILE PROJECT CARD (collapsed by default, tap to expand) ---
+const MobileProjectCard = ({ proj, index }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="border border-zinc-900 bg-zinc-950/60 rounded-3xl overflow-hidden backdrop-blur-xl"
+        >
+            {/* Always-visible header row — tap to toggle */}
+            <button
+                onClick={() => setIsOpen(o => !o)}
+                className="w-full flex items-start justify-between gap-4 p-5 text-left"
+            >
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-black text-white leading-snug mb-2">{proj.title}</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                        {proj.tech.map(t => (
+                            <span key={t} className="px-2.5 py-1 bg-zinc-900 text-[10px] font-black uppercase text-zinc-500 rounded-lg border border-zinc-800">{t}</span>
+                        ))}
+                    </div>
+                </div>
+                <motion.span
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-cyan-500 shrink-0 mt-1"
+                >
+                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </motion.span>
+            </button>
+
+            {/* Expandable content */}
+            <AnimatePresence initial={false}>
+                {isOpen && (
+                    <motion.div
+                        key="details"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-5 pb-5 border-t border-zinc-800/60 pt-4 space-y-4">
+                            {/* Bullet points */}
+                            <ul className="list-disc pl-4 space-y-2 text-zinc-400 text-sm leading-relaxed">
+                                {proj.bullets.map((bullet, idx) => (
+                                    <li key={idx} className="marker:text-cyan-500">{bullet}</li>
+                                ))}
+                            </ul>
+                            {/* Action links */}
+                            <div className="flex items-center gap-5 pt-1">
+                                {proj.github && (
+                                    <a href={proj.github} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 text-white font-black uppercase tracking-widest text-[11px] hover:text-cyan-400 transition-colors active:scale-95">
+                                        <Github size={15} /> View Code
+                                    </a>
+                                )}
+                                {proj.demo && (
+                                    <a href={proj.demo} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 text-white font-black uppercase tracking-widest text-[11px] hover:text-cyan-400 transition-colors active:scale-95">
+                                        <ExternalLink size={15} /> Live Demo
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
 
 const ProjectsBackgroundCanvas = () => {
     const canvasRef = useRef(null);
@@ -1664,12 +1788,8 @@ const App = () => {
                         ))}
                     </div>
                 </div>
-                {/* Mobile: horizontal scroll pill strip */}
-                <div className="lg:hidden mt-10 px-6 overflow-x-auto flex gap-3 pb-3">
-                    {skills.flatMap(s => s.items).map((item, idx) => (
-                        <span key={idx} className="shrink-0 px-4 py-2 bg-zinc-900 border border-zinc-800 text-xs font-black text-zinc-400 rounded-xl uppercase tracking-tighter whitespace-nowrap hover:border-purple-500/50 hover:text-white transition-all">{item}</span>
-                    ))}
-                </div>
+                {/* Mobile: accordion — tap to expand each skill category */}
+                <MobileSkillAccordion skills={skills} />
             </section>
 
             <hr className="section-divider" />
@@ -1683,7 +1803,16 @@ const App = () => {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.06),transparent)] pointer-events-none" />
 
                 <SectionHeader title="My projects" subtitle="Some of the things I've built" />
-                <div className="max-w-6xl mx-auto px-10 grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+
+                {/* Mobile: collapsed accordion cards */}
+                <div className="md:hidden px-5 space-y-4 relative z-10">
+                    {projects.map((proj, i) => (
+                        <MobileProjectCard key={i} proj={proj} index={i} />
+                    ))}
+                </div>
+
+                {/* Desktop: full tilt + float cards */}
+                <div className="hidden md:grid max-w-6xl mx-auto px-10 grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                     {projects.map((proj, i) => {
                         const isTouch = window.matchMedia('(pointer: coarse)').matches;
                         const ProjectFloat = isTouch
